@@ -16,5 +16,6 @@ var rootCmd = cobra.Command{
 func RootCmd() *cobra.Command {
 	rootCmd.AddCommand(&gitInfoCmd, &versionCmd)
 	rootCmd.PersistentFlags().StringP("mode", "m", "full", "output mode (short, full)")
+	rootCmd.PersistentFlags().StringP("out", "o", "", "output file")
 	return &rootCmd
 }

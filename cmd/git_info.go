@@ -2,14 +2,12 @@ package cmd
 
 import (
 	"encoding/json"
-	"log"
-	"os"
-
 	"fmt"
-
 	"github.com/andrexus/git-info/model"
 	"github.com/spf13/cobra"
 	"gopkg.in/src-d/go-git.v4"
+	"log"
+	"os"
 	"strings"
 )
 
@@ -22,25 +20,19 @@ var gitInfoCmd = cobra.Command{
 
 func getGitInfo(cmd *cobra.Command, args []string) {
 	mode, err := cmd.PersistentFlags().GetString("mode")
+	checkError(err)
+
 	if mode != "short" {
 		mode = "full"
 	}
-	if err != nil {
-		log.Fatalf("%v", err)
-	}
 	path, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
+
 	r, err := git.PlainOpen(path)
-	if err != nil {
-		log.Fatal(r)
-	}
+	checkError(err)
 
 	ref, err := r.Head()
-	if err != nil {
-		log.Fatal(r)
-	}
+	checkError(err)
 
 	commit, err := r.CommitObject(ref.Hash())
 
@@ -64,9 +56,27 @@ func getGitInfo(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	b, err := json.MarshalIndent(output, "", "  ")
-	if err != nil {
-		log.Fatal(err)
+	bytes, err := json.MarshalIndent(output, "", "  ")
+	checkError(err)
+
+	out, err := cmd.PersistentFlags().GetString("out")
+	checkError(err)
+
+	if out != "" {
+		f, err := os.Create(out)
+		checkError(err)
+		defer f.Close()
+
+		_, err = f.Write(bytes)
+		checkError(err)
+		f.Sync()
+	} else {
+		fmt.Printf("%s\n", bytes)
 	}
-	fmt.Printf("%s\n", b)
+}
+
+func checkError(e error) {
+	if e != nil {
+		log.Fatal(e)
+	}
 }
