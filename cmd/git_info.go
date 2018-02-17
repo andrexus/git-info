@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/andrexus/git-info/model"
@@ -93,6 +94,12 @@ func gitInfo(mode string, ref *plumbing.Reference, commit *object.Commit) model.
 }
 
 func writeFile(path string, data []byte) {
+	targetDir := filepath.Dir(path)
+	var _, err = os.Stat(targetDir)
+	if os.IsNotExist(err) {
+		os.MkdirAll(targetDir, os.ModePerm)
+	}
+
 	f, err := os.Create(path)
 	checkError(err)
 	defer f.Close()
